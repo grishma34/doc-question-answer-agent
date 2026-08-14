@@ -60,9 +60,20 @@ Trace: traces/session-ab12cd34ef56.jsonl
 # Retrieval relevance only — embeddings cost, effectively free
 PYTHONPATH=src python evals/run_evals.py --retrieval-only
 
-# Full agent run — scores retrieval relevance AND grounding (~$0.02-0.05)
+# Full agent run — scores retrieval relevance AND grounding (~$0.05-0.15)
 PYTHONPATH=src python evals/run_evals.py
 ```
+
+### Latest results (live run on Bedrock, us-east-1)
+
+| Metric | Score |
+|---|---|
+| Retrieval relevance | **20/20 (1.00)** |
+| Grounding (cites correct source + expected facts) | **20/20 (1.00)** |
+| Total tokens (full 20-case run) | 60,388 |
+| Approximate cost of the full run | ~$0.15 |
+
+Per-case details are written to `evals/results.json` on each run.
 
 ## Running the tests (no AWS required)
 

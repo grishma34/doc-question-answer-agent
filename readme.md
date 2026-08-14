@@ -5,6 +5,11 @@ sources. Built with **Python, LangGraph, and Amazon Bedrock** (Claude Haiku
 4.5 for generation, Titan Text Embeddings V2 for retrieval), designed to run
 for **under $5/month** on AWS.
 
+**Live demo:** https://d2lbrh3d8ok9t4.cloudfront.net — a hosted version
+(CloudFront + S3 frontend, Lambda backend) answering questions about the
+sample corpus. Rate-limited to a small daily budget; see
+[infra/](infra/) for the deployment.
+
 ## What it does
 
 - **Grounded answers, not invented ones** — a LangGraph agent loop sits on
@@ -99,6 +104,26 @@ charges are on-demand Bedrock invocations.
 
 The per-session token cap (20k) bounds worst-case cost per question to
 about $0.06 even if the agent loops to its step limit.
+
+The hosted demo adds ~$0 at rest: CloudFront/Lambda/S3 sit inside AWS
+always-free tiers, and a DynamoDB counter hard-caps the public endpoint at
+40 questions/day (~$4.20/month absolute worst case if maxed out daily). A
+$5/month AWS Budget email alert is configured as a backstop.
+
+## Hosted demo (infra/)
+
+`infra/deploy.py` provisions the demo with boto3: a private S3 bucket +
+CloudFront for the static page, and a dependency-free Lambda port of the
+agent loop (`infra/lambda_handler.py`) served through an API Gateway HTTP
+API behind the same distribution at `/api/*`. The Lambda bundles the tiny
+chunk index in its zip, embeds queries with Titan at request time, and
+enforces the same step/token budgets plus a daily request cap. The handler
+requires a secret header that only CloudFront injects, so bypassing the
+rate-limited CloudFront URL gets a 403.
+
+```bash
+PYTHONPATH=src python infra/deploy.py   # rerunnable; updates code + site
+```
 
 ## Project structure
 

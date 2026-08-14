@@ -32,6 +32,11 @@ doc-question-answer-agent/
 ├── evals/
 │   ├── eval_set.json           # 20 cases: question, sources, keywords
 │   └── run_evals.py            # Scores retrieval relevance + grounding
+├── infra/                      # Hosted demo (CloudFront + S3 + Lambda)
+│   ├── deploy.py               # boto3 deployment script (rerunnable)
+│   ├── lambda_handler.py       # Dependency-free port of the agent loop
+│   └── frontend/
+│       └── index.html          # Static demo page
 └── tests/
     ├── conftest.py             # Fake tool-calling LLM
     ├── test_chunking.py

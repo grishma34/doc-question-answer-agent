@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doc QA Agent — Live Demo</title>
+<style>
+  :root {
+    --bg: #f7f6f3; --panel: #ffffff; --ink: #1d1c1a; --muted: #6f6b63;
+    --accent: #b45f37; --accent-ink: #ffffff; --line: #e4e1da;
+    --code-bg: #f0eee9; --err: #a33c2c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161513; --panel: #201f1c; --ink: #ece9e3; --muted: #9a958b;
+      --accent: #d07a4b; --accent-ink: #16110d; --line: #33312c;
+      --code-bg: #2a2925; --err: #e07a63;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 Georgia, "Times New Roman", serif;
+    display: flex; justify-content: center; min-height: 100vh; padding: 24px 16px;
+  }
+  main { width: 100%; max-width: 720px; }
+  h1 { font-size: 1.7rem; margin: 8px 0 4px; font-weight: normal; }
+  h1 em { color: var(--accent); font-style: italic; }
+  .sub { color: var(--muted); font-size: .95rem; margin: 0 0 20px; }
+  .sub a { color: var(--accent); }
+  form { display: flex; gap: 8px; margin-bottom: 10px; }
+  input[type=text] {
+    flex: 1; padding: 12px 14px; font: inherit; color: var(--ink);
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  }
+  input[type=text]:focus { outline: 2px solid var(--accent); border-color: transparent; }
+  button {
+    padding: 12px 20px; font: inherit; border: 0; border-radius: 10px;
+    background: var(--accent); color: var(--accent-ink); cursor: pointer;
+  }
+  button:disabled { opacity: .5; cursor: default; }
+  .samples { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+  .samples button {
+    background: var(--panel); color: var(--muted); border: 1px solid var(--line);
+    font-size: .85rem; padding: 6px 12px; border-radius: 999px;
+  }
+  .samples button:hover { color: var(--ink); border-color: var(--accent); }
+  #out { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+         padding: 18px 20px; display: none; white-space: pre-wrap; }
+  #out.err { color: var(--err); }
+  #meta { color: var(--muted); font-size: .85rem; margin-top: 10px; display: none;
+          font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .cite { background: var(--code-bg); border-radius: 5px; padding: 1px 6px;
+          font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .82em; }
+  footer { color: var(--muted); font-size: .82rem; margin-top: 28px;
+           border-top: 1px solid var(--line); padding-top: 14px; }
+  .spin { display: inline-block; animation: r 1s linear infinite; }
+  @keyframes r { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Document QA <em>Agent</em></h1>
+  <p class="sub">
+    A tool-calling agent (LangGraph-style loop on Amazon Bedrock, Claude Haiku 4.5)
+    that answers questions about a small sample corpus — the docs of a fictional
+    "Aurora" developer platform — with cited sources.
+    Code &amp; design docs: <a href="https://github.com/grishma34/doc-question-answer-agent">GitHub</a>.
+  </p>
+
+  <form id="f">
+    <input id="q" type="text" maxlength="500" placeholder="Ask about deployments, billing, or security…" required>
+    <button id="go" type="submit">Ask</button>
+  </form>
+
+  <div class="samples" id="samples">
+    <button type="button">What payment methods are accepted?</button>
+    <button type="button">How do I roll back a deployment?</button>
+    <button type="button">How often are database credentials rotated?</button>
+    <button type="button">Is there a free tier?</button>
+  </div>
+
+  <div id="out"></div>
+  <div id="meta"></div>
+
+  <footer>
+    Answers come only from the indexed sample documents, with
+    <span class="cite">[source: doc.md#chunk]</span> citations. The demo is
+    rate-limited to a small daily budget; if it says the limit is reached,
+    clone the repo and run it against your own AWS account.
+  </footer>
+</main>
+<script>
+const f = document.getElementById("f");
+const q = document.getElementById("q");
+const go = document.getElementById("go");
+const out = document.getElementById("out");
+const meta = document.getElementById("meta");
+
+document.getElementById("samples").addEventListener("click", (e) => {
+  if (e.target.tagName === "BUTTON") { q.value = e.target.textContent; f.requestSubmit(); }
+});
+
+function renderAnswer(text) {
+  out.className = "";
+  out.textContent = "";
+  // wrap [source: ...] citations in a styled chip
+  const parts = text.split(/(\[source:[^\]]+\])/g);
+  for (const part of parts) {
+    if (/^\[source:/.test(part)) {
+      const s = document.createElement("span");
+      s.className = "cite"; s.textContent = part;
+      out.appendChild(s);
+    } else {
+      out.appendChild(document.createTextNode(part));
+    }
+  }
+}
+
+f.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const question = q.value.trim();
+  if (!question) return;
+  go.disabled = true;
+  out.style.display = "block"; meta.style.display = "none";
+  out.className = ""; out.innerHTML = '<span class="spin">◐</span> Searching the documents…';
+  try {
+    const r = await fetch("/api/ask?q=" + encodeURIComponent(question));
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || ("HTTP " + r.status));
+    renderAnswer(data.answer || "(empty answer)");
+    meta.style.display = "block";
+    meta.textContent = `steps: ${data.steps} · tokens: ${data.tokens_used}` +
+      ` · stop: ${data.stop_reason}` +
+      (data.sources && data.sources.length ? ` · retrieved: ${data.sources.join(", ")}` : "");
+  } catch (err) {
+    out.className = "err";
+    out.textContent = "Error: " + err.message;
+  } finally {
+    go.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

@@ -18,6 +18,7 @@
 - [x] Unit tests with fake LLM (no AWS needed): loop, limits, errors, chunking, store, trace
 - [x] readme, PLAN, PROJECT_STRUCTURE, claude.md, docs/*
 - [x] Public GitHub repo
+- [x] Hosted demo: CloudFront + S3 frontend, Lambda backend with daily cap, $5 budget alert
 
 ## Backlog
 

@@ -16,6 +16,9 @@
 | F10 | Return tool errors to the model as error messages (never crash the session) | `DocQAAgent._tools_node` |
 | F11 | Score the system on a fixed 20-case eval set: retrieval relevance + grounding | `evals/eval_set.json`, `evals/run_evals.py` |
 | F12 | Support a retrieval-only eval mode with near-zero cost | `run_evals.py --retrieval-only` |
+| F13 | Publicly hosted demo answering questions over the sample corpus | `infra/`: CloudFront + S3 page, API Gateway + Lambda backend |
+| F14 | Hosted endpoint unreachable except through the rate-limited CloudFront URL | CloudFront-injected `x-origin-verify` secret checked in the Lambda handler |
+| F15 | Hosted endpoint hard-capped per day to bound abuse cost | DynamoDB daily counter (40 requests/day → 429) |
 
 ## Non-functional
 
@@ -27,7 +30,8 @@
 | N4 | Deterministic, reproducible eval scoring | heuristic scorers (source match, keyword match), fixed eval set |
 | N5 | Model and region configurable without code changes | `DOCQA_MODEL_ID`, `DOCQA_EMBED_MODEL_ID`, `AWS_REGION` env vars |
 | N6 | A single question completes in ≤ 60s | `max_session_seconds` cap |
-| N7 | Secrets never stored in the repo | standard AWS credential chain (env/profile); `.gitignore` blocks `.env` |
+| N7 | Secrets never stored in the repo | standard AWS credential chain (env/profile); `.gitignore` blocks `.env`; the demo's origin secret lives only in Lambda env + CloudFront config |
+| N8 | Hosted demo costs ~$0 idle and stays under the $5 cap even under sustained abuse | always-free tiers (CloudFront/Lambda/S3), 40/day cap (~$4.20/mo worst case), $5 AWS Budget email alert |
 
 ## Out of scope (v0.1)
 

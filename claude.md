@@ -15,6 +15,11 @@ numpy file and the only paid calls are Bedrock invocations.
   call, and error-as-ToolMessage feedback.
 - `evals/` — the 20-case regression eval (retrieval relevance + grounding).
 - `tests/` — unit tests with a fake LLM; must pass with **no AWS access**.
+- `infra/` — the hosted demo (CloudFront + S3 + API Gateway + Lambda).
+  `lambda_handler.py` is a deliberate dependency-free **port** of the agent
+  loop — if you change loop semantics (budgets, error feedback, citation
+  format) in `src/doc_qa_agent/agent.py`, mirror the change there and
+  redeploy with `python infra/deploy.py`.
 
 ## Conventions
 

@@ -1,7 +1,8 @@
 # API Specification
 
-The project exposes two surfaces: a CLI and a Python API. There is no HTTP
-server (out of scope for v0.1 and unnecessary for the cost budget).
+The project exposes three surfaces: a CLI, a Python API, and the hosted
+demo's HTTP endpoint (CloudFront + API Gateway + Lambda; see the Hosted
+demo section in ARCHITECTURE.md).
 
 ## CLI
 
@@ -95,6 +96,29 @@ implementing `bind_tools`/`invoke` — tests inject a fake; production uses
 
 Event types: `session_start`, `llm_call`, `llm_response`, `tool_call`,
 `tool_result`, `tool_error`, `limit_hit`, `session_end`.
+
+## Hosted demo HTTP endpoint
+
+Base URL: `https://d2lbrh3d8ok9t4.cloudfront.net`
+
+### `GET /api/ask`
+
+| Query param | Required | Constraints |
+|---|---|---|
+| `q` | yes | The question; 1–500 characters |
+
+Responses (`application/json`, never cached):
+
+| Status | Body |
+|---|---|
+| 200 | `{"answer", "sources": [chunk ids retrieved], "steps", "tokens_used", "stop_reason"}` |
+| 400 | `{"error"}` — missing/too-long `q` |
+| 403 | `{"error": "Forbidden"}` — request bypassed CloudFront (missing origin secret header) |
+| 429 | `{"error"}` — daily question limit (40/day) reached |
+| 500 | `{"error"}` — unexpected failure (details go to CloudWatch logs only) |
+
+`stop_reason` is `"completed"` or `"budget_exceeded"` (the demo's caps:
+4 steps, 8K session tokens, 400 output tokens per model call).
 
 ## Eval report format
 

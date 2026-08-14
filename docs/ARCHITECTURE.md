@@ -81,6 +81,39 @@ file: what was searched, what came back, what the model did with it.
 | Custom tools node | `langgraph.prebuilt.ToolNode` | needed per-call trace logging and error-to-ToolMessage conversion with retry guidance |
 | Char-based chunking | token-based | avoids a tokenizer dependency; ~1200 chars ≈ 300 tokens, well inside embedding limits |
 
+## Hosted demo (infra/)
+
+A public, cost-capped deployment of the same system, fully self-contained
+in AWS (nothing runs on the dev machine):
+
+```
+browser ─► CloudFront ──► /        ─► S3 (private bucket, OAC) — static page
+                     └──► /api/*   ─► API Gateway HTTP API ─► Lambda ─► Bedrock
+```
+
+- **Lambda** (`infra/lambda_handler.py`) is a dependency-free port of the
+  agent loop: boto3 + stdlib only. The chunk index is baked into the
+  deployment zip as `index.json`; query embedding happens at request time
+  via Titan; the tool loop uses the Bedrock Converse API with the same
+  budget and error-feedback semantics as the LangGraph agent (which
+  remains the canonical implementation).
+- **Access control:** CloudFront injects a secret header
+  (`x-origin-verify`) at the origin; the handler rejects requests without
+  it, so API Gateway cannot be called around CloudFront. The S3 bucket is
+  private (CloudFront OAC only).
+- **Abuse/cost controls:** a DynamoDB counter caps the endpoint at 40
+  questions/day; per-request budgets are tighter than local defaults
+  (4 steps, 8K session tokens, 400 output tokens); a $5/month AWS Budget
+  email alert backstops everything. Idle cost is ~$0 (all components sit
+  in always-free tiers).
+- **Why API Gateway instead of a Lambda Function URL:** function URL
+  invocations (both CloudFront-OAC-signed and open) were rejected at the
+  service level on this account, so the API sits behind an API Gateway
+  HTTP API (~$1/M requests — negligible at demo volume).
+- **Deployment** is `infra/deploy.py` — a rerunnable boto3 script; rerun
+  it to push code/site changes or to rebuild the bundled index after
+  re-ingesting documents.
+
 ## Failure modes and handling
 
 - **Tool raises** → error ToolMessage, model retries or answers with a caveat.

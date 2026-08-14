@@ -28,6 +28,7 @@ vector index — no provisioned infrastructure.
 | 5 | Evaluation | `evals/eval_set.json` (20 cases), `evals/run_evals.py` (retrieval + grounding scores) | ✅ Done |
 | 6 | Tests | Fake-LLM unit tests for loop, limits, errors; chunking/store/trace tests | ✅ Done |
 | 7 | Docs + publish | readme, architecture/requirements/API/test docs, public GitHub repo | ✅ Done |
+| 8 | Hosted demo | CloudFront + S3 frontend, API Gateway + Lambda backend with daily cap and budget alert (`infra/`) | ✅ Done |
 
 ## Key design decisions
 

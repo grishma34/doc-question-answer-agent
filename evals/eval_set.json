@@ -1,0 +1,125 @@
+{
+  "description": "20-case evaluation set over the sample corpus. Each case lists the question, the source document(s) that contain the answer (for retrieval relevance), and keywords the grounded answer must contain (for grounding).",
+  "cases": [
+    {
+      "id": "e01",
+      "question": "How do I roll back a deployment and how long does it take?",
+      "expected_sources": ["aurora_platform.md"],
+      "expected_keywords": ["rollback", "30 seconds"]
+    },
+    {
+      "id": "e02",
+      "question": "How many approvals does a production deployment need?",
+      "expected_sources": ["aurora_platform.md"],
+      "expected_keywords": ["two approvals"]
+    },
+    {
+      "id": "e03",
+      "question": "When are development environments scaled to zero?",
+      "expected_sources": ["aurora_platform.md"],
+      "expected_keywords": ["overnight", "20:00"]
+    },
+    {
+      "id": "e04",
+      "question": "What are the CPU and memory limits per replica?",
+      "expected_sources": ["aurora_platform.md"],
+      "expected_keywords": ["4 vCPU", "8 GiB"]
+    },
+    {
+      "id": "e05",
+      "question": "How do I request higher service limits?",
+      "expected_sources": ["aurora_platform.md"],
+      "expected_keywords": ["QUOTA", "Jira"]
+    },
+    {
+      "id": "e06",
+      "question": "What is the default trace sampling rate and can I change it?",
+      "expected_sources": ["aurora_platform.md"],
+      "expected_keywords": ["10 percent", "24"]
+    },
+    {
+      "id": "e07",
+      "question": "How fast does the platform team respond to production incidents?",
+      "expected_sources": ["aurora_platform.md"],
+      "expected_keywords": ["15 minutes"]
+    },
+    {
+      "id": "e08",
+      "question": "What is a compute unit and how much does it cost?",
+      "expected_sources": ["billing_faq.md"],
+      "expected_keywords": ["1 vCPU", "$0.04"]
+    },
+    {
+      "id": "e09",
+      "question": "What payment methods can external partner teams use?",
+      "expected_sources": ["billing_faq.md"],
+      "expected_keywords": ["credit card", "invoice"]
+    },
+    {
+      "id": "e10",
+      "question": "Is there a free tier and how big is it?",
+      "expected_sources": ["billing_faq.md"],
+      "expected_keywords": ["500", "free"]
+    },
+    {
+      "id": "e11",
+      "question": "How much cheaper are development environments to run?",
+      "expected_sources": ["billing_faq.md"],
+      "expected_keywords": ["half", "$0.02"]
+    },
+    {
+      "id": "e12",
+      "question": "What credit do I get if availability drops below 99 percent?",
+      "expected_sources": ["billing_faq.md"],
+      "expected_keywords": ["25 percent"]
+    },
+    {
+      "id": "e13",
+      "question": "How long do I have to dispute a bill?",
+      "expected_sources": ["billing_faq.md"],
+      "expected_keywords": ["45 days"]
+    },
+    {
+      "id": "e14",
+      "question": "Who can see a team's billing reports?",
+      "expected_sources": ["billing_faq.md"],
+      "expected_keywords": ["team leads"]
+    },
+    {
+      "id": "e15",
+      "question": "How often are database credentials rotated?",
+      "expected_sources": ["security_policy.md"],
+      "expected_keywords": ["30 days"]
+    },
+    {
+      "id": "e16",
+      "question": "How is service-to-service traffic secured?",
+      "expected_sources": ["security_policy.md"],
+      "expected_keywords": ["mutual TLS"]
+    },
+    {
+      "id": "e17",
+      "question": "What CVE age blocks a deployment?",
+      "expected_sources": ["security_policy.md"],
+      "expected_keywords": ["critical", "7 days"]
+    },
+    {
+      "id": "e18",
+      "question": "How long can a production access elevation last?",
+      "expected_sources": ["security_policy.md"],
+      "expected_keywords": ["4 hours"]
+    },
+    {
+      "id": "e19",
+      "question": "How quickly must a security incident be reported?",
+      "expected_sources": ["security_policy.md"],
+      "expected_keywords": ["1 hour"]
+    },
+    {
+      "id": "e20",
+      "question": "Can I process payment card numbers on the shared platform?",
+      "expected_sources": ["security_policy.md"],
+      "expected_keywords": ["not permitted", "isolated tier"]
+    }
+  ]
+}

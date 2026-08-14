@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Project artifacts (generated locally, never committed)
+index/
+traces/
+evals/results.json
+
+# Environment / credentials
+.env
+.aws/
+
+# Editors
+.vscode/
+.idea/
